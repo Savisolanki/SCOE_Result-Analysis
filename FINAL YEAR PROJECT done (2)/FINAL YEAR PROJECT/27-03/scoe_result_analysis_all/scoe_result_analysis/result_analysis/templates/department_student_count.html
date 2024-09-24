@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Department Analysis</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .card-body {
+            width: 400px;
+            margin: 20px auto;
+            padding-right: 20px;
+        }
+        #subjectPassFailChart {
+            width: 200px;
+        }
+        .division-chart-container {
+            width: 400px;
+            margin: 20px auto;
+        }
+        .chart-container {
+            width: 400px;
+            margin: 20px auto;  
+        }
+        /* Custom CSS */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .container {
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+        .card-body {
+            padding: 20px;
+        }
+        .table-container {
+            margin-top: 20px;
+        }
+        .bell-curve-container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .bell-curve-chart {
+            display: inline-block;
+            border: 1px solid #ddd;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        @media print {
+            #printBtn {
+                display: none;
+            }
+            /* Add any additional styles needed for printing */
+        }
+    </style>
+</head>
+<body>
+    <!-- Bootstrap Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'upload_excel' %}">Result Analysis</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'add_department' %}">Add Department</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'enter_subject_names' %}">Add Subject</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'department_student_count' %}">Department Analysis</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Department Analysis</h1>
+
+        <!-- Department-wise Student Count -->
+        <div class="card">
+            <div class="card-header">Department-wise Student Count</div>
+            <div class="card-body">
+                <div class="table-container">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Department Name</th>
+                                <th>Total Count of Students</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for department_name, student_count in department_counts.items %}
+                            <tr>
+                                <td>{{ department_name }}</td>
+                                <td>{{ student_count }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Division-wise All Clear Percentage</div>
+            <div class="card-body">
+                <div class="division-chart-container">
+                    <canvas id="divisionPercentageChartUniqueID"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Data for the division-wise all clear percentage
+            var divisionData = [
+                {% for division, all_clear_percentage in all_clear_percentages %}
+                {
+                    division: "{{ division }}",
+                    percentage: {{ all_clear_percentage }}
+                },
+                {% endfor %}
+            ];
+
+            // Extracting division names and percentages
+            var divisionLabels = divisionData.map(function(item) {
+                return item.division;
+            });
+            var divisionPercentages = divisionData.map(function(item) {
+                return item.percentage;
+            });
+
+            // Creating pie chart data
+            var divisionPieChartData = {
+                labels: divisionLabels,
+                datasets: [{
+                    data: divisionPercentages,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+
+            // Options for the pie chart
+            var divisionPieChartOptions = {};
+
+            // Initialize and render the pie chart
+            var divisionPieChartCanvas = document.getElementById('divisionPercentageChartUniqueID').getContext('2d');
+            var divisionPieChart = new Chart(divisionPieChartCanvas, {
+                type: 'pie',
+                data: divisionPieChartData,
+                options: divisionPieChartOptions
+            });
+        </script>
+
+        <div class="card">
+            <div class="card-header">Subject Pass/Fail Count</div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="subjectPassFailChart"></canvas>
+                </div>
+                <div class="container">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Pass Count</th>
+                                    <th>Fail Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for subject_name, pass_count, fail_count in subject_counts %}
+                                <tr>
+                                    <td>{{ subject_name }}</td>
+                                    <td>{{ pass_count }}</td>
+                                    <td>{{ fail_count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subject Wise Toppers -->
+        <div class="card">
+            <div class="card-header">Subject Wise Toppers</div>
+            <div class="card-body">
+                <canvas id="subjectTopperChart"></canvas>
+            </div>
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                {% for subject_name, toppers in subject_toppers.items %}
+                <div class="col">
+                    <div class="card">
+                        <div class="card-header">{{ subject_name }}</div>
+                        <div class="card-body">
+                            {% for topper in toppers %}
+                            <div class="topper">
+                                <p class="card-text">{{ topper.student_name }}</p>
+                                <p class="card-text">Marks: {{ topper.marks }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <script>
+            // Extracting subject names and top scorer's marks
+            var subjectNames = [];
+            var topScorerMarks = [];
+
+            {% for subject_name, toppers in subject_toppers.items %}
+                subjectNames.push("{{ subject_name }}");
+                var topScorerMark = {% if toppers %}{{ toppers.0.marks }}{% else %}0{% endif %}; // Assuming toppers is a list of students sorted by marks
+                topScorerMarks.push(topScorerMark);
+            {% endfor %}
+
+            // Creating bar graph data
+            var subjectTopperChartData = {
+                labels: subjectNames,
+                datasets: [{
+                    label: 'Top Scorer Marks',
+                    data: topScorerMarks,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            };
+
+            // Options for the bar graph
+            var subjectTopperChartOptions = {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            };
+
+            // Initialize and render the bar graph
+            var subjectTopperChartCanvas = document.getElementById('subjectTopperChart').getContext('2d');
+            var subjectTopperChart = new Chart(subjectTopperChartCanvas, {
+                type: 'bar',
+                data: subjectTopperChartData,
+                options: subjectTopperChartOptions
+            });
+        </script>
+
+        <script>
+            // Data for the subject pass/fail count
+            var subjectData = [
+                {% for subject, pass_count, fail_count in subject_counts %}
+                {
+                    subject: "{{ subject }}",
+                    passCount: {{ pass_count }},
+                    failCount: {{ fail_count }}
+                },
+                {% endfor %}
+            ];
+
+            // Extracting subject names, pass counts, and fail counts
+            var subjectLabels = subjectData.map(function(item) {
+                return item.subject;
+            });
+            var passCounts = subjectData.map(function(item) {
+                return item.passCount;
+            });
+            var failCounts = subjectData.map(function(item) {
+                return item.failCount;
+            });
+
+            // Creating column chart data
+            var subjectChartData = {
+                labels: subjectLabels,
+                datasets: [{
+                    label: 'Pass Count',
+                    data: passCounts,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Fail Count',
+                    data: failCounts,
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            };
+
+            // Options for the column chart
+            var subjectChartOptions = {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            };
+
+            // Initialize and render the column chart
+            var subjectChartCanvas = document.getElementById('subjectPassFailChart').getContext('2d');
+            var subjectChart = new Chart(subjectChartCanvas, {
+                type: 'bar',
+                data: subjectChartData,
+                options: subjectChartOptions
+            });
+        </script>
+
+        <div class="card">
+            <div class="card-header">Top 5 Students</div>
+            <div class="card-body">
+                <canvas id="topStudentsHistogram"></canvas>
+            </div>
+            <div class="container">
+                <h1 class="mt-5 mb-4">Top 5 Students</h1>
+                <div class="row">
+                    {% for student in top_5_students %}
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <span class="badge bg-primary">{{ forloop.counter }}</span>
+                                <h5 class="card-title">{{ student.student.first_name }} {{ student.student.last_name }}</h5>
+                                <p class="card-text">Percentage: {{ student.percentage }}%</p>
+                                <span class="badge bg-info">{{ student.percentage }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Extracting student names and percentages
+            var studentNames = [];
+            var studentPercentages = [];
+
+            {% for student in top_5_students %}
+                studentNames.push("{{ student.student.first_name }} {{ student.student.last_name }}");
+                studentPercentages.push({{ student.percentage }});
+            {% endfor %}
+
+            // Creating histogram data
+            var topStudentsHistogramData = {
+                labels: studentNames,
+                datasets: [{
+                    label: 'Percentage',
+                    data: studentPercentages,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            };
+
+            // Options for the histogram
+            var topStudentsHistogramOptions = {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            };
+
+            // Initialize and render the histogram
+            var topStudentsHistogramCanvas = document.getElementById('topStudentsHistogram').getContext('2d');
+            var topStudentsHistogram = new Chart(topStudentsHistogramCanvas, {
+                type: 'bar',
+                data: topStudentsHistogramData,
+                options: topStudentsHistogramOptions
+            });
+        </script>
+        
+        <!-- Bell Curve Section -->
+        <div class="card bell-curve-container">
+            <div class="card-header">Overall Student Performance</div>
+            <div class="card-body bell-curve-chart">
+                <canvas id="bellCurveChart"></canvas>
+            </div>
+        </div>
+
+        <script>
+            // Bell Curve Data
+            var scores = [70, 75, 80, 85, 90, 95, 100, 105, 110, 115];
+            var frequencies = [5, 10, 15, 20, 25, 20, 15, 10, 5, 2];
+
+            var bellCurveData = {
+                labels: scores,
+                datasets: [{
+                    label: 'Student Scores Distribution',
+                    data: frequencies,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    fill: true,
+                    tension: 0.4,
+                    showLine: true
+                }]
+            };
+
+            var bellCurveOptions = {
+                scales: {
+                    xAxes: [{
+                        type: 'linear',
+                        position: 'bottom',
+                        ticks: {
+                            beginAtZero: true
+                        },
+                        title: {
+                            display: true,
+                            text: 'Scores'
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        },
+                        title: {
+                            display: true,
+                            text: 'Frequency'
+                        }
+                    }]
+                }
+            };
+
+            var bellCurveChartCanvas = document.getElementById('bellCurveChart').getContext('2d');
+            var bellCurveChart = new Chart(bellCurveChartCanvas, {
+                type: 'line',
+                data: bellCurveData,
+                options: bellCurveOptions
+            });
+        </script>
+    </div>
+
+    <!-- Division for Download Report -->
+    <div class="container mt-3 mb-3">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <button class="btn btn-outline-primary" id="printBtn" onclick="window.print()">Download Report</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

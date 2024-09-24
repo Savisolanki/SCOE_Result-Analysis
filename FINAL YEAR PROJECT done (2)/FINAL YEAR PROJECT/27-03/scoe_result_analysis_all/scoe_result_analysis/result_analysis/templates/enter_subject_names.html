@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Subject</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .red-text {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <!-- Bootstrap Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'upload_excel' %}">Result Analysis</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'add_department' %}">Add Department</a>  <!-- Link to Add Department page -->
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'enter_subject_names' %}">Add Subject</a>  <!-- Link to Add Subject page -->
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'department_student_count' %}">Department Analysis</a>  <!-- Link to Department Analysis page -->
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Container for styling -->
+    <div class="container-fluid mt-5">
+        <div class="row justify-content-center">
+            <!-- Form for adding subject names -->
+            <div class="col-lg-10">
+                <div class="card p-4 shadow scale-up">
+                    <h1 class="card-title text-center text-primary mb-4">Add Subject</h1>
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="subject1" class="form-label">Subject 1:</label>
+                            <input type="text" class="form-control" id="subject1" name="subject1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subject2" class="form-label">Subject 2:</label>
+                            <input type="text" class="form-control" id="subject2" name="subject2" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subject3" class="form-label">Subject 3:</label>
+                            <input type="text" class="form-control" id="subject3" name="subject3" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subject4" class="form-label">Subject 4:</label>
+                            <input type="text" class="form-control" id="subject4" name="subject4" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subject5" class="form-label">Subject 5:</label>
+                            <input type="text" class="form-control" id="subject5" name="subject5" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Submit</button>
+                    </form>
+                </div>
+            </div>
+            <!-- You can add a table to display available subjects here if needed -->
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
